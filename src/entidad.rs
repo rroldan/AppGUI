@@ -14,6 +14,26 @@ pub struct Persona {
     pub nombres : String
 }
 
+#[derive(Debug, Deserialize,Serialize,Clone)]
+pub enum Tipo {
+    Apartamento,
+    Casa,
+    Chalet
+}
+
+#[derive(Debug, Deserialize,Serialize,Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct TipoVivienda {
+    pub calle: String,
+    pub numero: i32,
+    pub piso: i32,
+    pub codigo_postal: i32,
+    pub metros_cuadrados: i32,
+    pub numero_aseos: i32,
+    pub numero_abitaciones: i32,
+    pub tipo: Tipo
+}
+
 impl ScreenOutput for Persona {
     fn toScreen(&self) -> String {
         format!("{:?},{:?},{:?}",self.identificacion,self.nombres,self.apellidos)
