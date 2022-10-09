@@ -1,4 +1,6 @@
 use entidad::Persona;
+use entidad::TipoVivienda;
+use entidad::Tipo;
 
 use crate::entidad::PersonaDAO;
 

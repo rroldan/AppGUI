@@ -15,6 +15,10 @@ pub struct Persona {
 }
 
 #[derive(Debug, Deserialize,Serialize,Clone)]
+pub struct Otra {}
+
+#[derive(Debug, Deserialize,Serialize,Clone)]
+#[serde(rename_all = "camelCase")]
 pub enum Tipo {
     Apartamento,
     Casa,
@@ -26,7 +30,7 @@ pub enum Tipo {
 pub struct TipoVivienda {
     pub calle: String,
     pub numero: i32,
-    pub piso: i32,
+    pub piso: String,
     pub codigo_postal: i32,
     pub metros_cuadrados: i32,
     pub numero_aseos: i32,
@@ -40,12 +44,29 @@ impl ScreenOutput for Persona {
     }
 }
 
+impl ScreenOutput for TipoVivienda {
+    fn toScreen(&self) -> String {
+        format!("{:?},{:?},{:?},{:?},{:?},{:?},{:?},{:?}", self.calle,self.numero,self.piso,self.codigo_postal,
+        self.metros_cuadrados,self.numero_aseos,self.numero_abitaciones, self.tipo)
+    }
+} 
+
 
 pub struct PersonaDAO {
     indice : HashMap<String,Persona>
 }
 
+pub struct TipoViviendaDAO {
+    indice : HashMap<String,Persona>
+}
+
 impl ScreenOutput for PersonaDAO {
+    fn toScreen(&self) -> String {
+        format!("{:?}",self.indice)
+    }
+}
+
+impl ScreenOutput for TipoViviendaDAO {
     fn toScreen(&self) -> String {
         format!("{:?}",self.indice)
     }
@@ -111,3 +132,26 @@ impl PersonaDAO {
     }        
 
 }
+
+#[test]
+fn to_screen_persona() {
+    let persona = super::Persona{identificacion: String::from("6"),
+    apellidos: String::from("VALERA VAZQUEZ"),
+    nombres: String::from("RAMON ALEJANDRO")};
+
+    assert_eq!(persona.toScreen(),"\"6\",\"RAMON ALEJANDRO\",\"VALERA VAZQUEZ\"");
+}
+#[test]
+fn to_screen_tipo_vivienda() {
+    let tipo_vivienda = super::TipoVivienda {
+    calle: String::from("San Isidro"),
+    numero: 4,
+    piso: String::from("1C"),
+    codigo_postal: 28350,
+    metros_cuadrados: 80,
+    numero_aseos: 1,
+    numero_abitaciones: 2,
+    tipo: super::Tipo::Apartamento};
+    assert_eq!(tipo_vivienda.toScreen(),"\"San Isidro\",4,\"1C\",28350,80,1,2,Apartamento");
+}
+
