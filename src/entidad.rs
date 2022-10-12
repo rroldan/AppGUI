@@ -28,13 +28,14 @@ pub enum Tipo {
 #[derive(Debug, Deserialize,Serialize,Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct TipoVivienda {
+    pub identificacion : String,
     pub calle: String,
     pub numero: i32,
     pub piso: String,
-    pub codigo_postal: i32,
+    pub codigo_postal: String,
     pub metros_cuadrados: i32,
     pub numero_aseos: i32,
-    pub numero_abitaciones: i32,
+    pub numero_habitaciones: i32,
     pub tipo: Tipo
 }
 
@@ -46,8 +47,8 @@ impl ScreenOutput for Persona {
 
 impl ScreenOutput for TipoVivienda {
     fn toScreen(&self) -> String {
-        format!("{:?},{:?},{:?},{:?},{:?},{:?},{:?},{:?}", self.calle,self.numero,self.piso,self.codigo_postal,
-        self.metros_cuadrados,self.numero_aseos,self.numero_abitaciones, self.tipo)
+        format!("{:?},{:?},{:?},{:?},{:?},{:?},{:?},{:?},{:?}", self.identificacion,self.calle,self.numero,self.piso,self.codigo_postal,
+        self.metros_cuadrados,self.numero_aseos,self.numero_habitaciones, self.tipo)
     }
 } 
 
@@ -57,7 +58,7 @@ pub struct PersonaDAO {
 }
 
 pub struct TipoViviendaDAO {
-    indice : HashMap<String,Persona>
+    indice : HashMap<String,TipoVivienda>
 }
 
 impl ScreenOutput for PersonaDAO {
@@ -132,6 +133,29 @@ impl PersonaDAO {
     }        
 
 }
+impl TipoViviendaDAO {
+    pub fn new() -> TipoViviendaDAO {
+        let mut p = TipoViviendaDAO { indice : HashMap::new() };
+        p.refresh();
+        p
+    }
+
+    pub fn refresh(&mut self)  {
+        let path_json =  Path::new("./src/json/tipo-vivienda.json");
+        let data_str = fs::read_to_string(path_json).expect("Unable to read file");
+        let tipo_vivienda : Vec<TipoVivienda> = serde_json::from_str(&data_str).expect("JSON does not have correct format.");
+        self.indice.clear();
+        for p in tipo_vivienda  {
+            self.indice.insert(p.clone().identificacion,p);
+        }
+    }
+
+    pub fn asVector(&self) -> Vec<TipoVivienda> {
+        let datos = self.indice.values().cloned().collect::<Vec<TipoVivienda>>();
+        datos
+    }
+    
+}
 
 #[test]
 fn to_screen_persona() {
@@ -144,14 +168,32 @@ fn to_screen_persona() {
 #[test]
 fn to_screen_tipo_vivienda() {
     let tipo_vivienda = super::TipoVivienda {
+    identificacion: String::from("1"),
     calle: String::from("San Isidro"),
     numero: 4,
     piso: String::from("1C"),
-    codigo_postal: 28350,
+    codigo_postal: String::from("28350"),
     metros_cuadrados: 80,
     numero_aseos: 1,
-    numero_abitaciones: 2,
+    numero_habitaciones: 2,
     tipo: super::Tipo::Apartamento};
-    assert_eq!(tipo_vivienda.toScreen(),"\"San Isidro\",4,\"1C\",28350,80,1,2,Apartamento");
+    assert_eq!(tipo_vivienda.toScreen(),"\"1\",\"San Isidro\",4,\"1C\",\"28350\",80,1,2,Apartamento");
+}
+#[test]
+fn as_vector_tipo_vivienda() {
+    let tipo_vivienda = super::TipoVivienda {
+        identificacion: String::from("1"),
+        calle: String::from("San Isidro"),
+        numero: 4,
+        piso: String::from("1C"),
+        codigo_postal: String::from("28350"),
+        metros_cuadrados: 80,
+        numero_aseos: 1,
+        numero_habitaciones: 2,
+        tipo: super::Tipo::Apartamento};
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();
+    let  mut datos: Vec<TipoVivienda> = vec! [tipo_vivienda];
+    let  mut datos2:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
+    assert_eq!(datos2[0].toScreen(), datos[0].toScreen());
 }
 

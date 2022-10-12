@@ -1,0 +1,12 @@
+[
+   {
+    "identificacion": "1",
+    "calle": "San Isidro",
+    "numero": 4,
+    "piso": "1C",
+    "codigoPostal": "28350",
+    "metrosCuadrados": 80,
+    "numeroAseos": 1,
+    "numeroHabitaciones": 2,
+    "tipo": "apartamento"
+}]
