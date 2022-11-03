@@ -1,7 +1,8 @@
-use std::{path::Path, fs::{File, self}, collections::HashMap, hash::Hash};
-
-use serde::{Deserialize, Serialize};
-
+use std::{path::Path, fs::{File, self}, collections::HashMap, hash::Hash, iter, result};
+use serde::{Deserialize, Serialize, ser::SerializeStruct};
+use std::error::Error;
+use csv::Reader;
+use csv::Writer;
 pub trait ScreenOutput {
     fn toScreen(&self) -> String;
 }
@@ -140,20 +141,71 @@ impl TipoViviendaDAO {
         p
     }
 
-    pub fn refresh(&mut self)  {
-        let path_json =  Path::new("./src/json/tipo-vivienda.json");
-        let data_str = fs::read_to_string(path_json).expect("Unable to read file");
-        let tipo_vivienda : Vec<TipoVivienda> = serde_json::from_str(&data_str).expect("JSON does not have correct format.");
+    pub fn refresh(&mut self) -> Result<(), Box<dyn Error>> {
+        let path_json =  Path::new("./src/csv/tipo-vivienda.csv");
         self.indice.clear();
-        for p in tipo_vivienda  {
-            self.indice.insert(p.clone().identificacion,p);
+    let mut rdr = Reader::from_path(path_json).unwrap();
+        let mut iter = rdr.deserialize();
+        if let Some(result) = iter.next() {
+            let record: TipoVivienda = result?;
+            self.indice.insert(record.clone().identificacion,record);
+            Ok(())
+        } else {
+            Err(From::from("expected at least one record but got none"))
         }
     }
+    pub fn save_state(&self) {
+        let datos = self.indice.values().cloned().collect::<Vec<TipoVivienda>>();
+        self.save(&datos);
+    }
+/* 
+    pub fn save(&self, datos : &Vec<TipoVivienda>) {
+        let path_json =  Path::new("./src/json/tipo-vivienda.json");
+        std::fs::write(
+            path_json,
+            serde_json::to_string_pretty(&datos).unwrap(),
+        )
+        .unwrap();        
+    }
+*/
+    pub fn save (&self, datos : &Vec<TipoVivienda>) -> Result<(), Box<dyn Error>> {
+        let path_json =  Path::new("./src/csv/tipo-vivienda.csv");
+        let mut wtr = Writer::from_path(path_json)?;
+        //let mut wtr = Writer::from_writer(vec![]);
+        for tipo_vivienda in datos {
+            wtr.serialize(tipo_vivienda)?
+        }
+        wtr.flush()?;
+        Ok(())
+    }
+
+
+    pub fn save_and_refresh(&mut self, datos: &Vec<TipoVivienda>) {
+        self.save(datos);
+        self.refresh();
+    }
+
 
     pub fn asVector(&self) -> Vec<TipoVivienda> {
         let datos = self.indice.values().cloned().collect::<Vec<TipoVivienda>>();
         datos
     }
+
+    pub fn add(&mut self, p : TipoVivienda) {
+        if !self.indice.contains_key(&p.identificacion) {
+            self.indice.insert(p.clone().identificacion, p);
+        }
+    } 
+
+    pub fn update(&mut self, p : TipoVivienda) {
+        if self.indice.contains_key(&p.identificacion) {
+            self.indice.insert(p.clone().identificacion, p);
+        }
+    } 
+
+    pub fn remove(&mut self, key : &String) -> Option<TipoVivienda> {
+        self.indice.remove(key)
+    }        
     
 }
 
@@ -179,21 +231,72 @@ fn to_screen_tipo_vivienda() {
     tipo: super::Tipo::Apartamento};
     assert_eq!(tipo_vivienda.toScreen(),"\"1\",\"San Isidro\",4,\"1C\",\"28350\",80,1,2,Apartamento");
 }
+
 #[test]
 fn as_vector_tipo_vivienda() {
-    let tipo_vivienda = super::TipoVivienda {
-        identificacion: String::from("1"),
-        calle: String::from("San Isidro"),
-        numero: 4,
-        piso: String::from("1C"),
-        codigo_postal: String::from("28350"),
-        metros_cuadrados: 80,
-        numero_aseos: 1,
-        numero_habitaciones: 2,
-        tipo: super::Tipo::Apartamento};
     let mut tipo_vivienda_dao = TipoViviendaDAO::new();
-    let  mut datos: Vec<TipoVivienda> = vec! [tipo_vivienda];
-    let  mut datos2:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
-    assert_eq!(datos2[0].toScreen(), datos[0].toScreen());
+    let  mut datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
+    assert_eq!(&datos[0].toScreen(),"\"1\",\"San Isidro\",4,\"1C\",\"28350\",80,1,2,Apartamento");
 }
 
+#[test]
+fn add_tipo_vivienda() {
+    let tipo_vivienda = super::TipoVivienda {
+        identificacion: String::from("2"),
+        calle: String::from("Chile"),
+        numero: 40,
+        piso: String::from(""),
+        codigo_postal: String::from("28350"),
+        metros_cuadrados: 100,
+        numero_aseos: 3,
+        numero_habitaciones: 3,
+        tipo: super::Tipo::Chalet
+    };
+
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();   
+    tipo_vivienda_dao.add(tipo_vivienda);
+
+    let datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
+    for tipo_vivienda in datos {
+        if tipo_vivienda.identificacion == "2" {
+            assert_eq!(tipo_vivienda.toScreen(), "\"2\",\"Chile\",40,\"\",\"28350\",100,3,3,Chalet");
+            break; 
+        }
+    }
+}
+#[test]
+fn remove_tipo_vivienda() {
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();   
+    tipo_vivienda_dao.remove(&String::from("1"));
+    let datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
+    assert_eq!(datos.len(),0);
+}
+
+#[test]
+fn save_an_refresh_tipo_vivienda() {
+    let tipo_vivienda = super::TipoVivienda {
+        identificacion: String::from("2"),
+        calle: String::from("Chile"),
+        numero: 40,
+        piso: String::from(""),
+        codigo_postal: String::from("28350"),
+        metros_cuadrados: 100,
+        numero_aseos: 3,
+        numero_habitaciones: 3,
+        tipo: super::Tipo::Chalet
+    };
+
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();   
+    tipo_vivienda_dao.add(tipo_vivienda);
+    tipo_vivienda_dao.save_and_refresh(&tipo_vivienda_dao.asVector());
+
+    let datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
+    for tipo_vivienda in datos {
+        if tipo_vivienda.identificacion == "2" {
+            assert_eq!(tipo_vivienda.toScreen(), "\"2\",\"Chile\",40,\"\",\"28350\",100,3,3,Chalet");
+            break; 
+        }
+    }
+    tipo_vivienda_dao.remove(&String::from("2"));
+    tipo_vivienda_dao.save_and_refresh(&tipo_vivienda_dao.asVector());
+}
