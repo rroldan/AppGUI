@@ -1,5 +1,6 @@
 use std::{path::Path, fs::{File, self}, collections::HashMap, hash::Hash, iter, result};
 use serde::{Deserialize, Serialize, ser::SerializeStruct};
+use std::str::FromStr;
 use std::error::Error;
 use csv::Reader;
 use csv::Writer;
@@ -26,6 +27,7 @@ pub enum Tipo {
     Chalet
 }
 
+
 #[derive(Debug, Deserialize,Serialize,Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct TipoVivienda {
@@ -38,6 +40,20 @@ pub struct TipoVivienda {
     pub numero_aseos: i32,
     pub numero_habitaciones: i32,
     pub tipo: Tipo
+}
+
+impl FromStr for Tipo {
+
+    type Err = ();
+
+    fn from_str(input: &str) -> Result<Tipo, Self::Err> {
+        match input {
+            "Apartamento"  => Ok(Tipo::Apartamento),
+            "Casa"  => Ok(Tipo::Casa),
+            "Chalet"  => Ok(Tipo::Chalet),
+            _      => Err(()),
+        }
+    }
 }
 
 impl ScreenOutput for Persona {

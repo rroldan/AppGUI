@@ -1,4 +1,4 @@
-use std::io::SeekFrom;
+use std::{io::SeekFrom, str::FromStr};
 
 use fltk::{
     app::{self, App}, enums,
@@ -24,21 +24,31 @@ enum Message {
     Save,
 }
 
-use crate::entidad::{Persona, ScreenOutput};
-use crate::entidad::PersonaDAO;
+//use crate::entidad::{Persona, ScreenOutput};
+//use crate::entidad::PersonaDAO;
+
+use crate::entidad::{TipoVivienda, ScreenOutput};
+use crate::entidad::TipoViviendaDAO;
+use crate::entidad::Tipo;
 
 pub struct GUI{
     app : App,
     wind : DoubleWindow,
     sender : Sender<Message>,
     receiver : Receiver<Message>,
-    model : Vec<Persona>,
-    personaDAO : PersonaDAO,
+    model : Vec<TipoVivienda>,
+    tipoViviendaDAO : TipoViviendaDAO,
     filter_input : Input,
     list_browser : HoldBrowser,
     ident_input : Input,
-    name_input : Input,
-    surname_input : Input,
+    calle_input : Input,
+    numero_input : Input,
+    piso_input : Input,
+    codigo_postal_input : Input,
+    metros_cuadrados_input : Input,
+    numero_aseos_input: Input,
+    numero_habitaciones_input: Input,
+    tipo_input: Input, 
     create_button : Button,
     update_button : Button,
     delete_button : Button,
@@ -70,21 +80,54 @@ impl GUI {
         )
         .with_label("Id:");
 
-        let name_input = Input::default()
+        let calle_input = Input::default()
         .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
         .below_of(&ident_input, WIDGET_PADDING)
-        .with_label("Nombres:");
+        .with_label("Calle:");
 
-        let surname_input = Input::default()
+        let numero_input = Input::default()
         .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
-        .below_of(&name_input, WIDGET_PADDING)
-        .with_label("Apellidos:");
+        .below_of(&calle_input, WIDGET_PADDING)
+        .with_label("Numero:");
+
+        let piso_input = Input::default()
+        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .below_of(&numero_input, WIDGET_PADDING)
+        .with_label("Piso:");
+
+        let codigo_postal_input = Input::default()
+        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .below_of(&piso_input, WIDGET_PADDING)
+        .with_label("Código Postal:");
+
+        let metros_cuadrados_input = Input::default()
+        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .below_of(&codigo_postal_input, WIDGET_PADDING)
+        .with_label("Metros:");
+
+        let numero_aseos_input = Input::default()
+        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .below_of(&metros_cuadrados_input, WIDGET_PADDING)
+        .with_label("Aseos:");
+
+        let numero_habitaciones_input = Input::default()
+        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .below_of(&numero_aseos_input, WIDGET_PADDING)
+        .with_label("Habitaciones:");
+
+        let tipo_input = Input::default()
+        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .below_of(&numero_habitaciones_input, WIDGET_PADDING)
+        .with_label("Tipo:");
+
+
+
 
         let mut create_button = Button::default()
             .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
             .with_pos(
                 WIDGET_PADDING,
-                list_browser.y() + list_browser.height() + WIDGET_PADDING,
+                list_browser.y() + list_browser.height() + WIDGET_PADDING*25,
             )
             .with_label("Crear");
 
@@ -103,8 +146,8 @@ impl GUI {
             .right_of(&delete_button, WIDGET_PADDING)
             .with_label("Guardar");
 
-        let personaDAO = PersonaDAO::new();
-        let model = personaDAO.asVector();
+        let tipoViviendaDAO = TipoViviendaDAO::new();
+        let model = tipoViviendaDAO.asVector();
 
         GUI {
             app : app,
@@ -113,11 +156,17 @@ impl GUI {
             receiver : receiver,
             filter_input : filter_input,
             list_browser : list_browser,
-            personaDAO : personaDAO,
+            tipoViviendaDAO : tipoViviendaDAO,
             model : model,
             ident_input : ident_input,
-            name_input : name_input,
-            surname_input : surname_input,
+            calle_input : calle_input,
+            numero_input : numero_input,
+            piso_input: piso_input,
+            codigo_postal_input: codigo_postal_input,
+            metros_cuadrados_input: metros_cuadrados_input,
+            numero_aseos_input: numero_aseos_input,
+            numero_habitaciones_input: numero_habitaciones_input,
+            tipo_input: tipo_input,
             create_button : create_button,
             update_button : update_button,
             delete_button : delete_button,
@@ -144,7 +193,7 @@ impl GUI {
         self.save_button.emit(self.sender, Message::Save);
 
         self.wind.set_size(
-            self.name_input.x() + self.name_input.width() + WIDGET_PADDING,
+            self.calle_input.x() + self.numero_input.width() + self.piso_input.width() + self.codigo_postal_input.width() + WIDGET_PADDING,
             self.create_button.y() + self.create_button.height() + WIDGET_PADDING,
         );
 
@@ -154,8 +203,8 @@ impl GUI {
 
     fn clear_edit(&mut self) {
         self.ident_input.set_value("");
-        self.name_input.set_value("");
-        self.surname_input.set_value("");
+        self.calle_input.set_value("");
+        self.numero_input.set_value("");
     }
 
     pub fn show(&mut self) {
@@ -164,10 +213,16 @@ impl GUI {
         while self.app.wait() {
             match self.receiver.recv() {
                 Some(Message::Create) => {
-                    self.model.push(Persona { 
+                    self.model.push(TipoVivienda { 
                         identificacion : self.ident_input.value(),
-                        apellidos : self.surname_input.value(),
-                        nombres : self.name_input.value()
+                        calle : self.calle_input.value(),
+                        numero : self.numero_input.value().parse().unwrap(),
+                        piso: self.piso_input.value(),
+                        codigo_postal: self.codigo_postal_input.value(),
+                        metros_cuadrados: self.metros_cuadrados_input.value().parse().unwrap(),
+                        numero_aseos: self.numero_aseos_input.value().parse().unwrap(),
+                        numero_habitaciones: self.numero_habitaciones_input.value().parse().unwrap(),
+                        tipo: Tipo::from_str(&self.tipo_input.value()).unwrap()
                     });
                     self.clear_edit();
                     self.sender.send(Message::Filter);
@@ -179,9 +234,15 @@ impl GUI {
                             return e.toScreen().eq_ignore_ascii_case(&text_selection)
                         }).next();
                         match search_result {
-                            Some(persona) => {
-                                persona.nombres = self.name_input.value();
-                                persona.apellidos = self.surname_input.value();
+                            Some(tipoVivienda) => {
+                                tipoVivienda.calle = self.calle_input.value();
+                                tipoVivienda.numero = self.numero_input.value().parse().unwrap();
+                                tipoVivienda.piso = self.piso_input.value();
+                                tipoVivienda.codigo_postal = self.codigo_postal_input.value();
+                                tipoVivienda.metros_cuadrados = self.metros_cuadrados_input.value().parse().unwrap();
+                                tipoVivienda.numero_aseos = self.numero_aseos_input.value().parse().unwrap();
+                                tipoVivienda.numero_habitaciones = self.numero_habitaciones_input.value().parse().unwrap();
+                                tipoVivienda.tipo = Tipo::from_str(&self.tipo_input.value()).unwrap();
                                 self.clear_edit();
                                 self.sender.send(Message::Filter);
                                 self.sender.send(Message::Select);
@@ -216,8 +277,8 @@ impl GUI {
                     }
                 }
                 Some(Message::Save) => {
-                    self.personaDAO.save_and_refresh(&self.model);
-                    self.model = self.personaDAO.asVector();
+                    self.tipoViviendaDAO.save_and_refresh(&self.model);
+                    self.model = self.tipoViviendaDAO.asVector();
                     self.clear_edit();
                     self.sender.send(Message::Filter);
                     self.sender.send(Message::Select);
@@ -233,10 +294,9 @@ impl GUI {
                         }).next();
 
                         match search_result {
-                            Some(persona) => {
-                                self.ident_input.set_value(&persona.identificacion);
-                                self.name_input.set_value(&persona.nombres);
-                                self.surname_input.set_value(&persona.apellidos);
+                            Some(tipoVivienda) => {
+                                self.ident_input.set_value(&tipoVivienda.identificacion);
+                                self.calle_input.set_value(&tipoVivienda.calle);
                                 self.update_button.activate();
                                 self.delete_button.activate();
                             },
@@ -264,7 +324,7 @@ impl GUI {
         }
     }
     
-    pub fn refresh(&mut self, data : Vec<Persona>) {
+    pub fn refresh(&mut self, data : Vec<TipoVivienda>) {
         for (i,p) in data.iter().enumerate() {
             println!("{} {:?} ",i, p);
         }    

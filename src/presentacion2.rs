@@ -20,7 +20,7 @@ enum Message {
     Filter,
 }
 
-use crate::entidad::Persona;
+use crate::entidad::TipoVivienda;
 
 pub struct GUI {
     app : App,
@@ -64,13 +64,12 @@ impl GUI {
         self.app.run().unwrap();
     }
     
-    pub fn refresh(&mut self, data : Vec<Persona>) {
+    pub fn refresh(&mut self, data : Vec<TipoVivienda>) {
         self.table.clear();
         for (i,p) in data.iter().enumerate() {
             println!("{} {:?} ",i, p);
             self.table.set_cell_value(i as i32, 0, p.identificacion.as_str());
-            self.table.set_cell_value(i as i32, 1, p.apellidos.as_str());
-            self.table.set_cell_value(i as i32, 2, p.nombres.as_str());           
+            self.table.set_cell_value(i as i32, 1, p.calle.as_str());       
         }    
         //self.wind.end();
     }

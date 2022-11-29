@@ -9,7 +9,7 @@ mod entidad;
 mod presentacion;
 
 fn main() {
-    let mut personaDAO = PersonaDAO::new();
+    let mut tipoViviendaDAO = TipoViviendaDAO::new();
     let mut gui = presentacion::GUI::new();
     gui.build();
     gui.show();    
