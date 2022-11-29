@@ -1,4 +1,4 @@
-use std::{path::Path, fs::{File, self}, collections::HashMap, hash::Hash, iter, result};
+use std::{path::Path, fs::{File, self}, collections::HashMap, hash::Hash, iter, result, fmt};
 use serde::{Deserialize, Serialize, ser::SerializeStruct};
 use std::str::FromStr;
 use std::error::Error;
@@ -52,6 +52,16 @@ impl FromStr for Tipo {
             "Casa"  => Ok(Tipo::Casa),
             "Chalet"  => Ok(Tipo::Chalet),
             _      => Err(()),
+        }
+    }
+}
+
+impl fmt::Display for Tipo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Tipo::Apartamento => write!(f, "Apartamento"),
+            Tipo::Casa => write!(f, "Casa"),
+            Tipo::Chalet => write!(f, "Chalet")
         }
     }
 }

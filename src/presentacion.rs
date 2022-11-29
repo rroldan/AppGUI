@@ -81,7 +81,7 @@ impl GUI {
         .with_label("Id:");
 
         let calle_input = Input::default()
-        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .with_size(WIDGET_WIDTH*3, WIDGET_HEIGHT)
         .below_of(&ident_input, WIDGET_PADDING)
         .with_label("Calle:");
 
@@ -116,7 +116,7 @@ impl GUI {
         .with_label("Habitaciones:");
 
         let tipo_input = Input::default()
-        .with_size(WIDGET_WIDTH, WIDGET_HEIGHT)
+        .with_size(WIDGET_WIDTH*3, WIDGET_HEIGHT)
         .below_of(&numero_habitaciones_input, WIDGET_PADDING)
         .with_label("Tipo:");
 
@@ -194,7 +194,7 @@ impl GUI {
 
         self.wind.set_size(
             self.calle_input.x() + self.numero_input.width() + self.piso_input.width() + self.codigo_postal_input.width() + WIDGET_PADDING,
-            self.create_button.y() + self.create_button.height() + WIDGET_PADDING,
+            self.create_button.y() + self.create_button.height() + WIDGET_PADDING * 20,
         );
 
         self.sender.send(Message::Filter);
@@ -205,6 +205,13 @@ impl GUI {
         self.ident_input.set_value("");
         self.calle_input.set_value("");
         self.numero_input.set_value("");
+        self.piso_input.set_value("");
+        self.codigo_postal_input.set_value("");
+        self.metros_cuadrados_input.set_value("");
+        self.numero_aseos_input.set_value("");
+        self.numero_habitaciones_input.set_value("");
+        self.tipo_input.set_value("");
+
     }
 
     pub fn show(&mut self) {
@@ -297,6 +304,13 @@ impl GUI {
                             Some(tipoVivienda) => {
                                 self.ident_input.set_value(&tipoVivienda.identificacion);
                                 self.calle_input.set_value(&tipoVivienda.calle);
+                                self.numero_input.set_value(&tipoVivienda.numero.to_string());
+                                self.piso_input.set_value(&tipoVivienda.piso);
+                                self.codigo_postal_input.set_value(&tipoVivienda.codigo_postal);
+                                self.metros_cuadrados_input.set_value(&tipoVivienda.metros_cuadrados.to_string());
+                                self.numero_aseos_input.set_value(&tipoVivienda.numero_aseos.to_string());
+                                self.numero_habitaciones_input.set_value(&tipoVivienda.numero_habitaciones.to_string());
+                                self.tipo_input.set_value(&tipoVivienda.tipo.to_string());
                                 self.update_button.activate();
                                 self.delete_button.activate();
                             },
