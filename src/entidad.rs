@@ -184,6 +184,7 @@ fn add_tipo_vivienda() {
         }
     }
 }
+
 #[test]
 fn remove_tipo_vivienda() {
     let mut tipo_vivienda_dao = TipoViviendaDAO::new();   
