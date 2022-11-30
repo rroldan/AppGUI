@@ -8,7 +8,6 @@ pub trait ScreenOutput {
     fn toScreen(&self) -> String;
 }
 
-
 #[derive(Debug, Deserialize,Serialize,Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Tipo {
@@ -16,7 +15,6 @@ pub enum Tipo {
     Casa,
     Chalet
 }
-
 
 #[derive(Debug, Deserialize,Serialize,Clone)]
 #[serde(rename_all = "camelCase")]
@@ -96,20 +94,8 @@ impl TipoViviendaDAO {
             self.indice.insert(record.clone().identificacion,record);
         }  
     }
-    pub fn save_state(&self) {
-        let datos = self.indice.values().cloned().collect::<Vec<TipoVivienda>>();
-        self.save(&datos);
-    }
-/* 
-    pub fn save(&self, datos : &Vec<TipoVivienda>) {
-        let path_json =  Path::new("./src/json/tipo-vivienda.json");
-        std::fs::write(
-            path_json,
-            serde_json::to_string_pretty(&datos).unwrap(),
-        )
-        .unwrap();        
-    }
-*/
+    
+
     pub fn save (&self, datos : &Vec<TipoVivienda>) -> Result<(), Box<dyn Error>> {
         let path_json =  Path::new("./src/csv/tipo-vivienda.csv");
         let mut wtr = Writer::from_path(path_json)?;
@@ -147,7 +133,7 @@ impl TipoViviendaDAO {
 
     pub fn remove(&mut self, key : &String) -> Option<TipoVivienda> {
         self.indice.remove(key)
-    }        
+    }      
     
 }
 
