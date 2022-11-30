@@ -167,18 +167,16 @@ impl TipoViviendaDAO {
         p
     }
 
-    pub fn refresh(&mut self) -> Result<(), Box<dyn Error>> {
-        let path_json =  Path::new("./src/csv/tipo-vivienda.csv");
+    pub fn refresh(&mut self) {
+        let path_csv =  Path::new("./src/csv/tipo-vivienda.csv");
         self.indice.clear();
-    let mut rdr = Reader::from_path(path_json).unwrap();
-        let mut iter = rdr.deserialize();
-        if let Some(result) = iter.next() {
-            let record: TipoVivienda = result?;
+        let mut rdr = Reader::from_path(path_csv).unwrap();
+
+        //let mut iter = rdr.deserialize();
+        for result in rdr.deserialize() {
+            let record: TipoVivienda = result.unwrap();
             self.indice.insert(record.clone().identificacion,record);
-            Ok(())
-        } else {
-            Err(From::from("expected at least one record but got none"))
-        }
+        }  
     }
     pub fn save_state(&self) {
         let datos = self.indice.values().cloned().collect::<Vec<TipoVivienda>>();
