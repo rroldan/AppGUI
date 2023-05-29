@@ -1,6 +1,7 @@
 
 use entidad::TipoVivienda;
 use entidad::Tipo;
+mod schema;
 
 use crate::entidad::TipoViviendaDAO;
 
