@@ -1,8 +1,8 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    tipo_viviendas (id) {
-        id -> Integer,
+    tipo_viviendas (identificacion) {
+        identificacion -> Text,
         calle -> Text,
         numero -> Integer,
         piso -> Text,

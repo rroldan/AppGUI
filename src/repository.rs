@@ -2,7 +2,7 @@ use diesel::prelude::*;
 use diesel::result::Error;
 use dotenv::dotenv;
 
-use crate::entidad::{NewTipoViviendaBD, TipoViviendaBD};
+use crate::entidad::{TipoViviendaBD};
 use crate::schema::tipo_viviendas::dsl::*;
 
 use std::env;
@@ -32,29 +32,29 @@ impl TipoViviendaRepository {
     }
 
 
-    pub fn find_by_id(&mut self, uniq_id: i32) -> Result<TipoViviendaBD, Error> {
+    pub fn find_by_id(&mut self, uniq_id: String) -> Result<TipoViviendaBD, Error> {
         tipo_viviendas.find(uniq_id).get_result::<TipoViviendaBD>(&mut self.conn)
     }
 
-    pub fn create(&mut self, new_tipo_vivienda: &NewTipoViviendaBD) -> Result<TipoViviendaBD, Error> {
+    pub fn create(&mut self, new_tipo_vivienda: &TipoViviendaBD) -> Result<TipoViviendaBD, Error> {
         diesel::insert_into(tipo_viviendas)
         .values(new_tipo_vivienda)
         .execute(&mut self.conn)
         .expect("Error saving new post");
 
-        tipo_viviendas.order(id.desc()).first(&mut self.conn)
+        tipo_viviendas.order(identificacion.desc()).first(&mut self.conn)
     }
 
-    pub fn update(&mut self, uniq_id: i32, tipo_vivienda: TipoViviendaBD) -> Result<TipoViviendaBD, Error> {
-        diesel::update(tipo_viviendas.find(tipo_vivienda.id))
+    pub fn update(&mut self, uniq_id: String, tipo_vivienda: TipoViviendaBD) -> Result<TipoViviendaBD, Error> {
+        diesel::update(tipo_viviendas.find(tipo_vivienda.identificacion))
         .set(calle.eq(&tipo_vivienda.calle))
         .execute(&mut self.conn)
         .unwrap();
 
-        tipo_viviendas.find(tipo_vivienda.id).first(&mut self.conn)
+        tipo_viviendas.find(uniq_id).first(&mut self.conn)
     }
 
-    pub fn delete(&mut self, uniq_id: i32) -> Result<usize, Error> {
+    pub fn delete(&mut self, uniq_id: String) -> Result<usize, Error> {
          diesel::delete(tipo_viviendas.find(uniq_id)).execute(&mut self.conn)
     }
     

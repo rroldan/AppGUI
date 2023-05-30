@@ -31,10 +31,10 @@ pub struct TipoVivienda {
     pub numero_habitaciones: i32,
     pub tipo: Tipo
 }
-#[derive(Debug, Queryable, Selectable)]
+#[derive(Debug, Queryable, Selectable, Insertable)]
 #[diesel(table_name = tipo_viviendas)]
 pub struct TipoViviendaBD {
-    pub id : i32,
+    pub identificacion: String,
     pub calle: String,
     pub numero: i32,
     pub piso: String,
@@ -44,20 +44,6 @@ pub struct TipoViviendaBD {
     pub numero_habitaciones: i32,
     pub tipo: String
 }
-
-#[derive(Debug, Insertable)]
-#[diesel(table_name = tipo_viviendas)]
-pub struct NewTipoViviendaBD {
-    pub calle: String,
-    pub numero: i32,
-    pub piso: String,
-    pub codigo_postal: String,
-    pub metros_cuadrados:  i32,
-    pub numero_aseos: i32,
-    pub numero_habitaciones: i32,
-    pub tipo: String
-}
-
 
 impl FromStr for Tipo {
 
