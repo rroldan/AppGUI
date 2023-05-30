@@ -3,7 +3,6 @@
 diesel::table! {
     tipo_viviendas (id) {
         id -> Integer,
-        identificacion -> Text,
         calle -> Text,
         numero -> Integer,
         piso -> Text,

@@ -1,11 +1,13 @@
 
-use entidad::TipoVivienda;
+use entidad::TipoViviendaBD;
 use entidad::Tipo;
-mod schema;
+
 
 use crate::entidad::TipoViviendaDAO;
 
 mod entidad;
+mod schema;
+mod repository;
 mod presentacion;
 
 fn main() {

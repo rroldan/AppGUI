@@ -1,7 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE tipo_viviendas (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    identificacion VARCHAR NOT NULL,
     calle VARCHAR NOT NULL,
     numero INTEGER NOT NULL,
     piso VARCHAR NOT NULL,

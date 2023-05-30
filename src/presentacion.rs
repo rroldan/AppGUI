@@ -221,7 +221,6 @@ impl GUI {
             match self.receiver.recv() {
                 Some(Message::Create) => {
                     self.model.push(TipoVivienda { 
-                        id: 0,
                         identificacion : self.ident_input.value(),
                         calle : self.calle_input.value(),
                         numero : self.numero_input.value().parse().unwrap(),

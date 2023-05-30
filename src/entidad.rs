@@ -4,13 +4,13 @@ use std::str::FromStr;
 use std::error::Error;
 use csv::Reader;
 use csv::Writer;
-use diesel::{Queryable, Insertable, Selectable};
+use diesel::{Queryable, Insertable, Selectable, Identifiable};
 use crate::schema::tipo_viviendas;
 pub trait ScreenOutput {
     fn toScreen(&self) -> String;
 }
 
-#[derive(Debug, Deserialize,Serialize,Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Tipo {
     Apartamento,
@@ -18,11 +18,9 @@ pub enum Tipo {
     Chalet
 }
 
-#[derive(Debug, Deserialize,Serialize,Clone, Queryable, Selectable)]
+#[derive(Debug, Deserialize,Serialize,Clone)]
 #[serde(rename_all = "camelCase")]
-#[diesel(table_name = tipo_viviendas)]
 pub struct TipoVivienda {
-    pub id : i32,
     pub identificacion: String,
     pub calle: String,
     pub numero: i32,
@@ -33,12 +31,10 @@ pub struct TipoVivienda {
     pub numero_habitaciones: i32,
     pub tipo: Tipo
 }
-
-#[derive(Debug, Deserialize,Serialize,Clone, Queryable, Selectable)]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Queryable, Selectable)]
 #[diesel(table_name = tipo_viviendas)]
-pub struct NewTipoVivienda {
-    pub identificacion: String,
+pub struct TipoViviendaBD {
+    pub id : i32,
     pub calle: String,
     pub numero: i32,
     pub piso: String,
@@ -46,7 +42,20 @@ pub struct NewTipoVivienda {
     pub metros_cuadrados: i32,
     pub numero_aseos: i32,
     pub numero_habitaciones: i32,
-    pub tipo: Tipo
+    pub tipo: String
+}
+
+#[derive(Debug, Insertable)]
+#[diesel(table_name = tipo_viviendas)]
+pub struct NewTipoViviendaBD {
+    pub calle: String,
+    pub numero: i32,
+    pub piso: String,
+    pub codigo_postal: String,
+    pub metros_cuadrados:  i32,
+    pub numero_aseos: i32,
+    pub numero_habitaciones: i32,
+    pub tipo: String
 }
 
 
@@ -159,8 +168,7 @@ impl TipoViviendaDAO {
 
 #[test]
 fn to_screen_tipo_vivienda() {
-    let tipo_vivienda = super::TipoVivienda {
-    id:0,
+    let tipo_vivienda = super::entidad::TipoVivienda {
     identificacion: String::from("1"),
     calle: String::from("San Isidro"),
     numero: 4,
@@ -182,8 +190,7 @@ fn as_vector_tipo_vivienda() {
 
 #[test]
 fn add_tipo_vivienda() {
-    let tipo_vivienda = super::TipoVivienda {
-        id:0,
+    let tipo_vivienda = super::entidad::TipoVivienda {
         identificacion: String::from("2"),
         calle: String::from("Chile"),
         numero: 40,
@@ -217,8 +224,7 @@ fn remove_tipo_vivienda() {
 
 #[test]
 fn save_an_refresh_tipo_vivienda() {
-    let tipo_vivienda = super::TipoVivienda {
-        id:0,
+    let tipo_vivienda = super::entidad::TipoVivienda {
         identificacion: String::from("2"),
         calle: String::from("Chile"),
         numero: 40,
