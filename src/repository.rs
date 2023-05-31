@@ -47,7 +47,7 @@ impl TipoViviendaRepository {
 
     pub fn update(&mut self, uniq_id: String, tipo_vivienda: TipoViviendaBD) -> Result<TipoViviendaBD, Error> {
         diesel::update(tipo_viviendas.find(tipo_vivienda.identificacion))
-        .set(calle.eq(&tipo_vivienda.calle))
+        .set((calle.eq(&tipo_vivienda.calle),numero.eq(&tipo_vivienda.numero), piso.eq(&tipo_vivienda.piso), codigo_postal.eq(&tipo_vivienda.codigo_postal), metros_cuadrados.eq(&tipo_vivienda.metros_cuadrados), numero_aseos.eq(&tipo_vivienda.numero_aseos),numero_habitaciones.eq(&tipo_vivienda.numero_habitaciones),tipo.eq(&tipo_vivienda.tipo)))
         .execute(&mut self.conn)
         .unwrap();
 

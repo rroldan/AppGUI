@@ -6,6 +6,7 @@ use csv::Reader;
 use csv::Writer;
 use diesel::{Queryable, Insertable, Selectable, Identifiable};
 use crate::schema::tipo_viviendas;
+use crate::repository::{TipoViviendaRepository};
 pub trait ScreenOutput {
     fn toScreen(&self) -> String;
 }
@@ -80,7 +81,8 @@ impl ScreenOutput for TipoVivienda {
 
 
 pub struct TipoViviendaDAO {
-    indice : HashMap<String,TipoVivienda>
+    indice : HashMap<String,TipoVivienda>,
+    repository: TipoViviendaRepository,
 }
 
 
@@ -93,7 +95,7 @@ impl ScreenOutput for TipoViviendaDAO {
 
 impl TipoViviendaDAO {
     pub fn new() -> TipoViviendaDAO {
-        let mut p = TipoViviendaDAO { indice : HashMap::new() };
+        let mut p = TipoViviendaDAO { indice : HashMap::new(), repository: TipoViviendaRepository::new()  };
         p.refresh();
         p
     }
@@ -136,18 +138,41 @@ impl TipoViviendaDAO {
 
     pub fn add(&mut self, p : TipoVivienda) {
         if !self.indice.contains_key(&p.identificacion) {
+            let tipoViviendaBD: TipoViviendaBD = self.convert(p.clone());
             self.indice.insert(p.clone().identificacion, p);
+            self.repository.create(&tipoViviendaBD);
+
         }
     } 
 
     pub fn update(&mut self, p : TipoVivienda) {
         if self.indice.contains_key(&p.identificacion) {
+            let tipoViviendaBD: TipoViviendaBD = self.convert(p.clone());
+            let id:String = p.clone().identificacion;
             self.indice.insert(p.clone().identificacion, p);
+            self.repository.update(id,tipoViviendaBD);
         }
     } 
 
     pub fn remove(&mut self, key : &String) -> Option<TipoVivienda> {
+        self.repository.delete(key.to_string());
         self.indice.remove(key)
+    }
+
+    pub fn convert(&mut self, p:TipoVivienda) -> TipoViviendaBD {
+        return super::entidad::TipoViviendaBD {
+            identificacion: p.identificacion,
+            calle: p.calle,
+            numero: p.numero,
+            piso: p.piso,
+            codigo_postal: p.codigo_postal,
+            metros_cuadrados: p.metros_cuadrados,
+            numero_aseos: p.numero_aseos,
+            numero_habitaciones: p.numero_habitaciones,
+            tipo:  format!("{:?}", p.tipo)
+            }
+            
+   
     }      
     
 }
