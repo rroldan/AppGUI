@@ -209,6 +209,7 @@ fn as_vector_tipo_vivienda() {
 
 #[test]
 fn add_tipo_vivienda() {
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();
     let tipo_vivienda = super::entidad::TipoVivienda {
         identificacion: String::from("2"),
         calle: String::from("Chile"),
@@ -220,9 +221,6 @@ fn add_tipo_vivienda() {
         numero_habitaciones: 3,
         tipo: super::Tipo::Chalet
     };
-
-    let mut tipo_vivienda_dao = TipoViviendaDAO::new();
-    tipo_vivienda_dao.deleteAll();
     tipo_vivienda_dao.add(tipo_vivienda);
 
     let datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
