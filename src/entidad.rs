@@ -113,12 +113,16 @@ impl TipoViviendaDAO {
     }
     
 
-    pub fn save (&self, datos : &Vec<TipoVivienda>) -> Result<(), Box<dyn Error>> {
+    pub fn save (&mut self, datos : &Vec<TipoVivienda>) -> Result<(), Box<dyn Error>> {
         let path_json =  Path::new("./src/csv/tipo-vivienda.csv");
         let mut wtr = Writer::from_path(path_json)?;
         //let mut wtr = Writer::from_writer(vec![]);
+        self.repository.deleteAll();
         for tipo_vivienda in datos {
+            let tipoViviendaBD: TipoViviendaBD = self.convert(tipo_vivienda.clone());
+            self.repository.create(&tipoViviendaBD);
             wtr.serialize(tipo_vivienda)?
+           
         }
         wtr.flush()?;
         Ok(())
@@ -155,8 +159,12 @@ impl TipoViviendaDAO {
     } 
 
     pub fn remove(&mut self, key : &String) -> Option<TipoVivienda> {
-        self.repository.delete(key.to_string());
+        self.repository.delete(key);
         self.indice.remove(key)
+    }
+
+    pub fn deleteAll(&mut self) {
+        self.repository.deleteAll();
     }
 
     pub fn convert(&mut self, p:TipoVivienda) -> TipoViviendaBD {
@@ -213,7 +221,8 @@ fn add_tipo_vivienda() {
         tipo: super::Tipo::Chalet
     };
 
-    let mut tipo_vivienda_dao = TipoViviendaDAO::new();   
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();
+    tipo_vivienda_dao.deleteAll();
     tipo_vivienda_dao.add(tipo_vivienda);
 
     let datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
@@ -231,6 +240,7 @@ fn remove_tipo_vivienda() {
     tipo_vivienda_dao.remove(&String::from("1"));
     let datos:  Vec<TipoVivienda> = tipo_vivienda_dao.asVector();
     assert_eq!(datos.len(),0);
+    tipo_vivienda_dao.deleteAll();
 }
 
 #[test]
@@ -246,8 +256,8 @@ fn save_an_refresh_tipo_vivienda() {
         numero_habitaciones: 3,
         tipo: super::Tipo::Chalet
     };
-
-    let mut tipo_vivienda_dao = TipoViviendaDAO::new();   
+    let mut tipo_vivienda_dao = TipoViviendaDAO::new();  
+    tipo_vivienda_dao.deleteAll(); 
     tipo_vivienda_dao.add(tipo_vivienda);
     tipo_vivienda_dao.save_and_refresh(&tipo_vivienda_dao.asVector());
 

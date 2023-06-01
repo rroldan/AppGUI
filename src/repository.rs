@@ -40,7 +40,7 @@ impl TipoViviendaRepository {
         diesel::insert_into(tipo_viviendas)
         .values(new_tipo_vivienda)
         .execute(&mut self.conn)
-        .expect("Error saving new post");
+        .expect("Error saving new TipoViviendaBD");
 
         tipo_viviendas.order(identificacion.desc()).first(&mut self.conn)
     }
@@ -54,8 +54,12 @@ impl TipoViviendaRepository {
         tipo_viviendas.find(uniq_id).first(&mut self.conn)
     }
 
-    pub fn delete(&mut self, uniq_id: String) -> Result<usize, Error> {
+    pub fn delete(&mut self, uniq_id: &String) -> Result<usize, Error> {
          diesel::delete(tipo_viviendas.find(uniq_id)).execute(&mut self.conn)
+    }
+
+    pub fn deleteAll(&mut self) -> Result<usize, Error>{
+        diesel::delete(tipo_viviendas).execute(&mut self.conn)
     }
     
 }
